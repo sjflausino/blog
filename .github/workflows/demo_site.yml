@@ -7,6 +7,8 @@ on:
 jobs:
   deploy_demo_site:
     runs-on: "ubuntu-latest"
+    permissions:
+      contents: write
     env:
       BUNDLE_PATH: "vendor/bundle"
       BUNDLE_JOBS: 4
@@ -32,17 +34,23 @@ jobs:
           git clone --depth=1 --branch="${REMOTE_BRANCH}" --single-branch --no-checkout "${REMOTE_REPO}" _site/
       - name: Build site
         run: bundle exec jekyll build --verbose --trace
-      - name: Deploy to GitHub Pages
-        run: |
-          SOURCE_COMMIT="$(git log -1 --pretty="%an: %B" "$GITHUB_SHA")"
-          pushd _site &>/dev/null
-          : > .nojekyll
+      # - name: Deploy to GitHub Pages
+      #   run: |
+      #     SOURCE_COMMIT="$(git log -1 --pretty="%an: %B" "$GITHUB_SHA")"
+      #     pushd _site &>/dev/null
+      #     : > .nojekyll
 
-          git add --all
-          git -c user.name="${GITHUB_ACTOR}" -c user.email="${GITHUB_ACTOR}@users.noreply.github.com" \
-            commit --quiet \
-            --message "Deploy demo-site from ${GITHUB_SHA}" \
-            --message "$SOURCE_COMMIT"
-          git push
+      #     git add --all
+      #     git -c user.name="${GITHUB_ACTOR}" -c user.email="${GITHUB_ACTOR}@users.noreply.github.com" \
+      #       commit --quiet \
+      #       --message "Deploy demo-site from ${GITHUB_SHA}" \
+      #       --message "$SOURCE_COMMIT"
+      #     git push
 
-          popd &>/dev/null
+      #     popd &>/dev/null
+      
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: .
