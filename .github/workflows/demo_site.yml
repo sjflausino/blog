@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  deploy_demo_site:
+  build:
     runs-on: "ubuntu-latest"
     permissions:
       contents: write
@@ -19,15 +19,12 @@ jobs:
         with:
           repository: jekyll/minima
           ref: demo-site
+          
       - name: Set up Ruby 2.7
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: 2.7
           bundler-cache: true
-          
-      - name: Setup Pages
-        id: pages
-        uses: actions/configure-pages@v5
         
       - name: Clone target branch
         run: |
@@ -37,10 +34,24 @@ jobs:
           echo "Publishing to ${GITHUB_REPOSITORY} on branch ${REMOTE_BRANCH}"
           rm -rf _site/
           git clone --depth=1 --branch="${REMOTE_BRANCH}" --single-branch --no-checkout "${REMOTE_REPO}" _site/
+      
+      - name: Setup Pages
+        id: pages
+        uses: actions/configure-pages@v5
+        
       - name: Build site
         run: bundle exec jekyll build --verbose --trace --baseurl "${{ steps.pages.outputs.base_path }}"
         
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-
