@@ -29,7 +29,7 @@ jobs:
       - name: Clone target branch
         run: |
           REMOTE_BRANCH="${REMOTE_BRANCH:-gh-pages}"
-          REMOTE_REPO="https://${GITHUB_ACTOR}:${{'${{'}} secrets.GITHUB_TOKEN ${{'}}'}}@github.com/${GITHUB_REPOSITORY}.git"
+          REMOTE_REPO="https://${GITHUB_ACTOR}:${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git"
 
           echo "Publishing to ${GITHUB_REPOSITORY} on branch ${REMOTE_BRANCH}"
           rm -rf _site/
