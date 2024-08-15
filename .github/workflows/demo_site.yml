@@ -24,6 +24,11 @@ jobs:
         with:
           ruby-version: 2.7
           bundler-cache: true
+          
+      - name: Setup Pages
+        id: pages
+        uses: actions/configure-pages@v5
+        
       - name: Clone target branch
         run: |
           REMOTE_BRANCH="${REMOTE_BRANCH:-gh-pages}"
@@ -33,24 +38,9 @@ jobs:
           rm -rf _site/
           git clone --depth=1 --branch="${REMOTE_BRANCH}" --single-branch --no-checkout "${REMOTE_REPO}" _site/
       - name: Build site
-        run: bundle exec jekyll build --verbose --trace
+        run: bundle exec jekyll build --verbose --trace --baseurl "${{ steps.pages.outputs.base_path }}"
         
-      - name: Deploy
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: .
-          
-      - name: Configure GitHub Pages
-        uses: actions/github-script@v6
-        with:
-          script: |
-            github.rest.repos.updateInformationAboutPagesSite({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              source: {
-                branch: 'gh-pages',
-                path: '/blog'
-              }
-            })
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
 
